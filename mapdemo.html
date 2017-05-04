@@ -1,0 +1,464 @@
+﻿<!DOCTYPE html>
+<html>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <meta http-equiv="content-type" content="text/html;charset=utf-8" />
+<head>
+    <title>
+        Du Map Demo
+    </title>
+    <style type="text/css">
+        html{height: 100%}
+        body{height: 100%;margin: 0px;padding: 0px}
+        #container{height: 100%}
+    </style>
+    <script  src="http://api.map.baidu.com/api?v=2.0&ak=48N58koCmp2Z6CiNER3vfG4vvoBYvaiL" type="text/javascript"></script>
+    <script type="text/javascript" src="http://api.map.baidu.com/library/DistanceTool/1.2/src/DistanceTool_min.js"></script>
+    <script type="text/javascript" src="searchBox.js"></script>
+    <link rel="stylesheet" type="text/css" href="searchBox.css" />
+    <!-- <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.0/jquery.min.js"></script> -->
+    <script type="text/javascript">
+        function loc_success(e)
+        {
+            address += e.addressComponent.province;
+            address += e.addressComponent.city;
+            address += e.addressComponent.district;
+            address += e.addressComponent.street;
+            address += e.addressComponent.streetNumber;
+            alert("当前定位地址为：" + address);
+        }
+        function loc_error(e)
+        {
+            alert(e.message);
+        }
+    </script>
+    <style type="text/css">
+        .First_layer
+    </style>
+</head>
+<body>
+    <div id="container" >
+<!--         <form action="mapdemo.php" id="point_coordinate" method="post">
+            <input type="hidden" name="coordinate_ln" id="longitude" value="11111111">
+            <input type="hidden" name="coordinate_la" id="latitude" value="">
+        </form> -->
+    </div>
+</body>
+
+<script type="text/javascript">
+    var map=new BMap.Map("container");    //命名控件BMap,类名Map，实例化Map类
+    var point=new BMap.Point(114.06667,22.61667);   //同上，实例化BMap命名控件的Point类
+    map.centerAndZoom(point,12);
+
+    //create ajax object
+    var xmlhttp;
+    if (window.XMLHttpRequest)
+    {
+        xmlhttp = new XMLHttpRequest;
+    }
+    else
+    {
+        xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+    }
+    
+    // xmlhttp.onreadystatechange = function()
+    // {
+    //     if (xmlhttp.readyState == 4 && xmlhttp.status == 200)
+    //     {
+    //         alert("请求处理成功");
+    //     }
+    // }
+
+    //点击创建标注
+    map.addEventListener("rightdblclick",function(e)
+    {
+        var pointA = new BMap.Point();
+        pointA.lng = e.point.lng;
+        pointA.lat = e.point.lat;
+        //var marker = new BMap.Marker(pointA);   //标注名称建议设置为marker
+        //var menu = new BMap.ContextMenu();
+        //添加函数指针，关联右键菜单删除操作
+
+        var removeMarker = function(e,ee,marker)
+        {
+            map.removeOverlay(marker);
+        }
+
+        var saveMarker = function(e,ee,marker)
+        {
+            //获取点的坐标
+            //向服务端发送数据，发送给mapdemo.php处理
+            var pointP = new BMap.Point();
+            pointP.lng = marker.point.lng;
+            pointP.lat = marker.point.lat;
+            // console.log(aa);
+            // console.log( document.getElementById("longitude"));
+            // v_lng.value = pointP.lng;
+            // v_lat.value = pointP.lat;
+            // v_firm.submit();
+            // ajax send data
+            xmlhttp.open("POST","mapdemo.php",true);
+            xmlhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+            // xmlhttp.send("longitude="+pointP.lng+"&latitude="+pointP.lat);
+            xmlhttp.send("length="+1+"&longitude="+pointP.lng+"&latitude="+pointP.lat);
+            //alert(pointP.lng);
+
+        }
+
+
+        var markerMenu = new BMap.ContextMenu();
+
+        var txtMenuItem = [
+            {
+                text : '删除',
+                callback : removeMarker.bind(marker)
+            },
+            {
+                text : '存储',
+                callback : saveMarker.bind(marker)
+            }
+        ];
+
+        for (var i=0;i < txtMenuItem.length;i++)
+        {
+            markerMenu.addItem(new BMap.MenuItem(txtMenuItem[i].text,txtMenuItem[i].callback,100));
+        }
+
+        var marker = new BMap.Marker(pointA);
+        map.addOverlay(marker);
+        marker.addContextMenu(markerMenu);
+
+        //var markerMenu = new BMap.ContextMenu();
+
+        //markerMenu.addItem(new BMap.MenuItem('删除',removeMarker.bind(marker)));
+
+        //map.addOverlay(marker);
+        //marker.addContextMenu(markerMenu);
+        marker.enableDragging();
+    });
+
+
+    //常用的功能
+    map.enableScrollWheelZoom();
+    map.enableKeyboard();
+    map.enableContinuousZoom();
+    map.disableDoubleClickZoom();
+    map.enableInertialDragging();
+
+    map.addControl(new BMap.MapTypeControl({
+        type:BMAP_MAPTYPE_CONTROL_HORIZONTAL,
+        mapTypes:[BMAP_NORMAL_MAP,BMAP_HYBRID_MAP],        //指定mapTypes的类型，语法细节注意
+        anchor:BMAP_ANCHOR_BOTTOM_RIGHT}));
+
+    map.addControl(new BMap.NavigationControl({
+        type:BMAP_NAVIGATION_CONTROL_ZOOM,
+        anchor:BMAP_ANCHOR_BOTTOM_RIGHT,
+        enableGeolocation:true,
+        offset:new BMap.Size(20,110)}));  //缩放工具
+
+    map.addControl(new BMap.ScaleControl({anchor:BMAP_ANCHOR_BOTTOM_LEFT}));    //比例尺
+    // map.addControl(new BMap.OverviewMapControl({isOpen:true}));     //缩略小地图
+    // var geolocationcontrol=new BMap.GeolocationControl();
+    // geolocationcontrol.addEventListener("locationSuccess",loc_success(e));
+    // geolocationcontrol.addEventListener("locationError",loc_error(e));
+    // map.addControl(geolocationcontrol);
+    // map.addControl(new BMap.LocalSearch);
+    //自定义工具类
+    function toolsControl()
+    {
+        this.defaultAnchor = BMAP_ANCHOR_TOP_RIGHT;
+        this.defaultOffset = new BMap.Size(20,20);
+    }
+    //继承Control的全部属性
+    toolsControl.prototype = new BMap.Control();
+    //自定义类的initialize方法
+    toolsControl.prototype.initialize = function(map)
+    {
+        var button = document.createElement("button");
+        // var conta = document.getElementById("content_tool");
+        button.appendChild(document.createTextNode("测距工具"));
+        //button.style.cursor = "pointer";
+        //button.style.border = "1px solid gray";
+        //button.style.backgroundColor = "white";
+        //button.style.value="测距工具";
+        button.style.width = "90px";
+        button.style.height = "30px";
+        button.setAttribute("id","distanceButton");
+        var myDis = new BMapLib.DistanceTool(map);
+        button.onclick = function(e)
+        {
+            myDis.open();
+        }
+        //map.getContainer().appendChild(div);
+        //conta.appendChild(div);
+        map.getContainer().appendChild(button);
+        return button;
+    }
+    //创建控件实例
+    var myDistanceTool = new toolsControl();
+    map.addControl(myDistanceTool);
+
+
+    //划线存储，类似测距
+    function linesControl()
+    {
+        this.defaultOffset = new BMap.Size(20,60);
+        this.defaultAnchor = BMAP_ANCHOR_TOP_RIGHT;
+    }
+
+    linesControl.prototype = new BMap.Control();
+
+    linesControl.prototype.initialize = function(map)
+    {
+        var button = document.createElement("button");
+        button.appendChild(document.createTextNode("划线工具"));
+        button.style.width = "90px";
+        button.style.height = "30px";
+        button.setAttribute("id","lineButton");
+        button.onclick = function(e)
+        {
+
+            map.onclick = function(e)
+            {
+                var points = [];
+                var marker = new BMap.Marker(e.point);
+                points.push(e.point);
+                map.addOverlay(marker);
+            }
+            map.onrightclick = function(e)
+            {
+                var styleOptions = {
+                    strokeColor : "red",
+                    fillColor : "red",
+                    strokeWeight : 3,
+                    strokeOpacity : 0.8,
+                    fillOpacity : 0.6,
+                    strokeStyle : 'solid'
+                }
+                var polyLine = new BMap.Polyline(points,styleOptions);
+                // var removeMarker = function(e,ee,marker)
+                // {
+                //     map.removeOverlay(marker);
+                // }
+                // var saveMarker = function(e,ee,marker)
+                // {
+                //     xmlhttp.open("POST","mapdemo.php",true);
+                //     xmlhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+                //     var len = points.length;
+                //     var pointQ = BMap.Point();
+                //     //send length,for the receiver to process
+                //     xmlhttp.send("length="+len);
+                //     for (var i=len;i>0 && xmlhttp.readyState==4 && xmlhttp.status==200;i--)
+                //     {
+                //         pointQ.lat = points[len-i].lat;
+                //         pointQ.lng = points[len-i].lng;
+                //         xmlhttp.send("length="+1+"&longitude="+pointQ.lng+"&latitude="+pointQ.lat);
+                //     }
+                // }
+
+                // var markerMenu = new BMap.ContextMenu();
+
+                // var txtMenuItem = [
+                //     {
+                //         text : 'delete',
+                //         callback : removeMarker.bind(marker)
+                //     },
+                //     // {
+                //     //     text : 'save',
+                //     //     callback : saveMarker.bind(marker)
+                //     // }
+                // ];
+
+                // for (var i=0;i<txtMenuItem.length;i++)
+                // {
+                //     markerMenu.addItem(new BMap.MenuItem(txtMenuItem[i].text,txtMenuItem[i].callback,100));
+                // }
+
+                //add line to map
+                var marker = new BMap.Marker(polyLine);
+                map.clearOverlays();
+               // map.addOverlay(marker);
+                // marker.addContextMenu(markerMenu);
+                map.removeEventListener("click",function(e)
+                    {
+                        var marker = new BMap.Marker(e.point);
+                        points.push(e.point);
+                        map.addOverlay(marker);
+                    });
+            }
+
+        }
+        map.getContainer().appendChild(button);
+        return button;
+    }
+
+    var myLinesTool = new linesControl();
+    map.addControl(myLinesTool);
+
+
+
+
+    //搜索框定义
+    function searchControl()
+    {
+        this.defaultAnchor = BMAP_ANCHOR_TOP_LEFT;
+        this.defaultOffset = new BMap.Size(20,20);
+    }
+    //继承Control
+    searchControl.prototype = new BMap.Control();
+    //初始化函数
+    searchControl.prototype.initialize = function(map)
+    {
+        var div = document.createElement("div");
+        var form = div.appendChild(document.createElement("form"));
+        var input0 = div.appendChild(document.createElement("input"));
+        var input1 = div.appendChild(document.createElement("input"));
+        var srp = div.appendChild(document.createElement("div"));
+        input1.type = "button";
+        input0.type = "text";
+        input1.setAttribute("id","search");
+        input0.setAttribute("id","suggestId");
+        srp.setAttribute("id","searchResultPanel");
+        input1.setAttribute("value","搜索");
+        //样式
+        div.style.cursor = "pointer";
+        div.style.border = "0px solid gray";
+        div.style.backgroundColor = "white";
+
+        srp.style.width = "150 px";
+        srp.style.height = "auto";
+        srp.style.border = "1px solid #C0C0C0";
+        srp.style.display = "none";
+
+
+        input0.style.width = "150 px";
+        input1.style.width = "100 px";
+        input0.style.autocomplete = "off";
+        input1.onclick = function()
+        {
+             map.clearOverlays();
+             var messageSearch = document.getElementById("suggestId");
+             //alert(messageSearch.value);
+             // window.location.href="${pageContext.request.contextPath}/device/devicelist1.do?name="+encodeURIComponent(encodeURIComponent(name,'UTF-8'),'UTF-8');
+             var local = new BMap.LocalSearch(map,{renderOptions:{map:map}});
+             local.search(messageSearch.value);
+        }
+        map.getContainer().appendChild(div);
+        return div;
+    }
+
+    //添加搜索框到地图
+    var mySearch = new searchControl();
+    map.addControl(mySearch);
+
+
+
+
+    function G(id) {
+        return document.getElementById(id);
+    }
+
+    var ac = new BMap.Autocomplete(
+    {
+        "input"  :  "suggestId"
+        ,"location"  :  Map
+    }
+        );
+
+    //添加事件
+    ac.addEventListener("onhighlight",function(e){
+        var str = "";
+        var _value = e.fromitem.value;
+        var value = "";
+        if (e.fromitem.index > -1)
+        {
+            value = _value.province + _value.city + _value.district + _value.street + _value.business;
+        }
+        str = "FromItem<br />index = " + e.fromitem.index + "<br />value = " + value;
+
+        value="";
+        if (e.toitem.index > -1)
+        {
+            _value = e.toitem.value;
+            value = _value.province + _value.city + _value.district + _value.street + _value.business;
+        }
+        str += "<br />ToItem<br />index = " + e.toitem.index + "<br />value = " + value;
+        G("searchResultPanel").innerHTML = str;
+    });
+
+    var myValue;
+    ac.addEventListener("onconfirm",function(e){
+        var _value = e.item.value;
+        myValue = _value.province + _value.city + _value.district + _value.street + _value.business;
+
+        G("searchResultPanel").innerHTML = "onconfirm<br />index = " + e.item.index + "<br />myValue = " + myValue;
+
+        setPlace();
+    });
+
+
+    function setPlace()
+    {
+        map.clearOverlays();
+        function myFun()
+        {
+            var pp = local.getResults().getPoi(0).point;
+            map.centerAndZoom(pp,18);
+
+            var removeMarker = function(e,ee,marker)
+            {
+                map.removeOverlay(marker);
+            }
+
+            var saveMarker = function(e,ee,marker)
+            {
+                //获取点的坐标
+                //向服务器端发送数据，发送给mapdemo.php处理
+                var pointP = new BMap.Point();
+                pointP = marker.getPosition();
+                // document.getElementById("longitude").setAttribute("value",pointP.lng);
+                // document.getElementById("latitude").setAttribute("value",pointP.lat);
+                // document.getElementById("point_coordinate").submit();
+                xmlhttp.open("POST","mapdemo.php",true);
+                xmlhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+                xmlhttp.send("length="+1+"$longitude="+pointP.lng+"&latitude="+pointP.lat);
+            }
+
+            var markerMenu = new BMap.ContextMenu();
+
+            var txtMenuItem = [
+                {
+                    text : '删除',
+                    callback : removeMarker.bind(marker)
+                },
+                {
+                    text : '存储',
+                    callback : saveMarker.bind(marker)
+                }
+            ];
+
+            //markerMenu.addItem(new BMap.MenuItem('删除',removeMarker.bind(marker)));
+            for (var i=0;i < txtMenuItem.length;i++)
+            {
+                markerMenu.addItem(new BMap.MenuItem(txtMenuItem[i].text,txtMenuItem[i].callback,100));
+            }
+
+            var marker = new BMap.Marker(pp);
+            map.addOverlay(marker);
+            marker.addContextMenu(markerMenu);
+
+        }
+        var local = new BMap.LocalSearch(map,{
+            onSearchComplete: myFun
+        });
+        local.search(myValue);
+    }
+
+    var sizeCity = new BMap.Size(120,22);
+    map.addControl(new BMap.CityListControl(
+        {
+            anchor : BMAP_ANCHOR_TOP_RIGHT,
+            offset : sizeCity
+        }));
+
+</script>
+</html>
