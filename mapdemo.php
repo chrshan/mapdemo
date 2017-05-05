@@ -28,18 +28,29 @@
     $length = $_POST['length'];
     $end_id = mysql_query("SELECT max(Id) From Pointsave",$dbcMap);
     $result = mysql_fetch_array($end_id,MYSQL_ASSOC);
-    for ($i=$length;$i>0;$i--)
+    // for ($i=$length;$i>0;$i--)
+    // {
+    //     $longitude = $_POST['longitude'];
+    //     $latitude = $_POST['latitude'];
+    //     $is_ok = mysql_query("INSERT INTO Pointsave (Longitude,Latitude) VALUES($longitude,$latitude)");
+    // //$is_ok = mysql_query("INSERT INTO Pointsave (Longitude,Latitude) VALUES(1991,4777)");
+    //     if (!$is_ok)
+    //     {
+    //         die("Can\'t add map_db : " . mysql_error());
+    //     }
+    // }
+    $longitude = $_POST['longitude'];
+    $latitude = $_POST['latitude'];
+    if ($longitude)
     {
-        $longitude = $_POST['longitude'];
-        $latitude = $_POST['latitude'];
         $is_ok = mysql_query("INSERT INTO Pointsave (Longitude,Latitude) VALUES($longitude,$latitude)");
-    //$is_ok = mysql_query("INSERT INTO Pointsave (Longitude,Latitude) VALUES(1991,4777)");
         if (!$is_ok)
         {
             die("Can\'t add map_db : " . mysql_error());
         }
     }
-    
+
+
 
     mysql_close($dbcMap);          
  ?>
