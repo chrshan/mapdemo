@@ -217,8 +217,17 @@
         button.onclick = function(e)
         {
             var points = [];
+            var countA = 1;
+            var countB = 1;
             map.onclick = function(e)
             {
+                if (countB == 1)
+                {
+                    map.clearOverlays();
+                    points = [];
+                    countB = 0;
+                    countA = 1;
+                }
                 var marker = new BMap.Marker(e.point);
                 points.push(e.point);
                 map.addOverlay(marker);
@@ -241,51 +250,60 @@
                     strokeStyle : 'solid'
                 }
 
-                var polyLine = new BMap.Polyline(points,styleOptions);
-                // var polyLine = new BMap.Polyline([new Bmap.Point(116.399,39.910),new BMap.Point(116.405,39.920)],{strokeColor:"blue", strokeWeight:2, strokeOpacity:0.5});
-                // var removeMarker = function(e,ee,marker)
-                // {
-                //     map.removeOverlay(marker);
-                // }
-                // var saveMarker = function(e,ee,marker)
-                // {
-                //     xmlhttp.open("POST","mapdemo.php",true);
-                //     xmlhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
-                //     var len = points.length;
-                //     var pointQ = BMap.Point();
-                //     //send length,for the receiver to process
-                //     xmlhttp.send("length="+len);
-                //     for (var i=len;i>0 && xmlhttp.readyState==4 && xmlhttp.status==200;i--)
-                //     {
-                //         pointQ.lat = points[len-i].lat;
-                //         pointQ.lng = points[len-i].lng;
-                //         xmlhttp.send("length="+1+"&longitude="+pointQ.lng+"&latitude="+pointQ.lat);
-                //     }
-                // }
+                var polyline = new BMap.Polyline(points,styleOptions);
 
-                // var markerMenu = new BMap.ContextMenu();
+                var removePol = function(e,ee,pol)
+                {
+                    //map.removeOverlay(pol);
+                    map.clearOverlays();
+                }
 
-                // var txtMenuItem = [
-                //     {
-                //         text : 'delete',
-                //         callback : removeMarker.bind(marker)
-                //     },
-                //     // {
-                //     //     text : 'save',
-                //     //     callback : saveMarker.bind(marker)
-                //     // }
-                // ];
+                var savePol = function(e,ee,pol)
+                {
+                    xmlhttp.open("POST","mapdemo.php",true);
+                    xmlhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+                    var len = points.length;
+                    var pointQ = BMap.Point();
+                    //send length,for the receiver to process
+                    xmlhttp.send("length="+len);
+                    for (var i=len;i>0 && xmlhttp.readyState==4 && xmlhttp.status==200;i--)
+                    {
+                        pointQ.lat = points[len-i].lat;
+                        pointQ.lng = points[len-i].lng;
+                        xmlhttp.send("length="+1+"&longitude="+pointQ.lng+"&latitude="+pointQ.lat);
+                    }
+                }
 
-                // for (var i=0;i<txtMenuItem.length;i++)
-                // {
-                //     markerMenu.addItem(new BMap.MenuItem(txtMenuItem[i].text,txtMenuItem[i].callback,100));
-                // }
+                var polMenu = new BMap.ContextMenu();
+
+                var txtMenuItem = [
+                    {
+                        text : 'delete',
+                        callback : removePol.bind(polyline)
+                    },
+                    {
+                        text : 'save',
+                        callback : savePol.bind(polyline)
+                    }
+                ];
+
+                for (var i=0;i<txtMenuItem.length;i++)
+                {
+                    polMenu.addItem(new BMap.MenuItem(txtMenuItem[i].text,txtMenuItem[i].callback,100));
+                }
+
+                // markerMenu.addItem(new BMap.MenuItem('删除折线',function(){map.clearOverlays()},100));
 
                 //add line to map
-                //var marker = new BMap.Marker(polyLine);
-                //map.clearOverlays();
-                map.addOverlay(polyLine);
-                // marker.addContextMenu(markerMenu);
+                // polyline is an overlay
+                if (countA == 1)
+                {
+                    map.clearOverlays();
+                    countA = 0;
+                }
+                map.addOverlay(polyline);
+                countB = 1;
+                polyline.addContextMenu(polMenu);
             }
 
         }
