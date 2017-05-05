@@ -15,7 +15,7 @@
     <script type="text/javascript" src="http://api.map.baidu.com/library/DistanceTool/1.2/src/DistanceTool_min.js"></script>
     <script type="text/javascript" src="searchBox.js"></script>
     <link rel="stylesheet" type="text/css" href="searchBox.css" />
-    <!-- <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.0/jquery.min.js"></script> -->
+    <script src="jquery.js"></script>
     <script type="text/javascript">
         function loc_success(e)
         {
@@ -260,18 +260,44 @@
 
                 var savePol = function(e,ee,pol)
                 {
-                    xmlhttp.open("POST","mapdemo.php",true);
-                    xmlhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+                    // xmlhttp.open("POST","mapdemo.php",true);
+                    // xmlhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
                     var len = points.length;
                     var pointQ = BMap.Point();
+                    var i = 0;
                     //send length,for the receiver to process
-                    xmlhttp.send("length="+len);
-                    for (var i=len;i>0 && xmlhttp.readyState==4 && xmlhttp.status==200;i--)
+                    // xmlhttp.send("length="+len);
+                    // for (var i=len;i>0 && xmlhttp.readyState==4 && xmlhttp.status==200;i--)
+                    // {
+                    //     pointQ.lat = points[len-i].lat;
+                    //     pointQ.lng = points[len-i].lng;
+                    //     xmlhttp.send("longitude="+pointQ.lng+"&latitude="+pointQ.lat);
+                    // }
+                    function sendPoint(i)
                     {
-                        pointQ.lat = points[len-i].lat;
-                        pointQ.lng = points[len-i].lng;
-                        xmlhttp.send("length="+1+"&longitude="+pointQ.lng+"&latitude="+pointQ.lat);
+                        if (i<len)
+                        {
+                            i++;
+                            pointQ.lat = points[i-1].lat;
+                            pointQ.lng = points[i-1].lng;
+                            $.ajax
+                            ({
+                                type : "POST",
+                                url : "mapdemo.php",
+                                data : {longitude : pointQ.lng,latitude : pointQ.lat},
+                                dataType : "json",
+                                success : sendPoint(i)
+                            });
+                        }
                     }
+                    $.ajax
+                    ({
+                        type : "POST",
+                        url : "mapdemo.php",
+                        data : {length : len},
+                        dataType : "json",
+                        success : sendPoint(i)
+                    });
                 }
 
                 var polMenu = new BMap.ContextMenu();
