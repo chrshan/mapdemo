@@ -214,12 +214,15 @@
         button.style.width = "90px";
         button.style.height = "30px";
         button.setAttribute("id","lineButton");
-        button.onclick = function(e)
+        // button.onclick = function(e)
+        var button_click = function(e)
         {
             var points = [];
             var countA = 1;
             var countB = 1;
-            map.onclick = function(e)
+            //single click to make marker
+            // map.onclick = function mlclick(e)
+            var map_click = function mlclick(e)
             {
                 if (countB == 1)
                 {
@@ -231,39 +234,15 @@
                 var marker = new BMap.Marker(e.point);
                 points.push(e.point);
                 map.addOverlay(marker);
-            }
+            };
+            map.addEventListener('click',map_click,false);
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-            map.onrightclick = function(e)
+            //single rightclick to make function,while consist in the single click
+            // map.onrightclick = function mrclick(e)
+            var map_rightclick = function mrclick(e)
             {
-                // map.removeEventListener("click",function(e)
-                //     {
-                //         var marker = new BMap.Marker(e.point);
-                //         points.push(e.point);
-                //         map.addOverlay(marker);
-                //     });
+                map.removeEventListener('click',map_click,false);
 
                 var styleOptions = {
                     strokeColor : "red",
@@ -280,6 +259,7 @@
                 {
                     //map.removeOverlay(pol);
                     map.clearOverlays();
+                    points = [];
                 }
 
                 var savePol = function(e,ee,pol)
@@ -333,51 +313,24 @@
                 countB = 1;
                 polyline.addContextMenu(polMenu);
 
-            }//zheli
+            };//mouserightclick function end
+            map.addEventListener('rightclick',map_rightclick,false);
+
+            //push esc to close edit mode
+            // map.onkeydown = function(e)
+            // {
+            //     // var keynum = e.keyCode;
+            //     // if (keynum == 27)
+            //     // {
+            //     //     map.removeEventListener('click',mlclick,false);
+            //     //     map.removeEventListener('rightclick',mrclick,false);
+            //     // }
+            //     map.clearOverlays();
+            // }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        }
+        };//button line-drawing function end
+        button.addEventListener('click',button_click,false);
         map.getContainer().appendChild(button);
         return button;
     }
