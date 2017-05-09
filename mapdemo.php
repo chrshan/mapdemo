@@ -46,7 +46,7 @@
             // $end_id = mysql_query("SELECT max(Id) From Pointsave",$dbcMap);
             // $result = mysql_fetch_array($end_id,MYSQL_ASSOC);
             //ORDER BY Id DESC LIMIT 1
-            $end_id = mysql_query("SELECT * FROM Pointsave ORDER BY Id DESC LIMIT 1",$dbconnect);
+            $end_id = mysql_query("SELECT * FROM Pointsave ORDER BY Id DESC LIMIT 1");
             $result_array = mysql_fetch_array($end_id);
             $result = $result_array['Id'];
             $linestring = "";
