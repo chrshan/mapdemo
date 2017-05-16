@@ -31,9 +31,9 @@
             alert(e.message);
         }
     </script>
-    <style type="text/css">
+ <!--    <style type="text/css">
         .First_layer
-    </style>
+    </style> -->
 </head>
 <body>
     <div id="container" >
@@ -152,8 +152,8 @@
     map.addControl(new BMap.NavigationControl({
         type:BMAP_NAVIGATION_CONTROL_ZOOM,
         anchor:BMAP_ANCHOR_BOTTOM_RIGHT,
-        enableGeolocation:true,
-        offset:new BMap.Size(20,110)}));  //缩放工具
+        enableGeolocation:false,
+        offset:new BMap.Size(20,40)}));  //缩放工具
 
     map.addControl(new BMap.ScaleControl({anchor:BMAP_ANCHOR_BOTTOM_LEFT}));    //比例尺
     // map.addControl(new BMap.OverviewMapControl({isOpen:true}));     //缩略小地图
@@ -162,6 +162,164 @@
     // geolocationcontrol.addEventListener("locationError",loc_error(e));
     // map.addControl(geolocationcontrol);
     // map.addControl(new BMap.LocalSearch);
+
+    //GPS location based on H5
+    // function locateControl()
+    // {
+    //     this.defaultAnchor = BMAP_ANCHOR_BOTTOM_RIGHT;
+    //     this.defaultOffset = new BMap.Size(20,120);
+    // }
+
+    // locateControl.prototype = new BMap.Control();
+
+    // locateControl.prototype.initialize = function(map)
+    // {
+    //     var button = document.createElement("button");
+    //     button.appendChild(document.createTextNode("."));
+    //     button.style.width = "13px";
+    //     button.style.height = "13px";
+    //     button.setAttribute("id","locateButton");
+    //     // var mmk = function mmkf()
+    //     // {
+    //     //     if (navigator.geolocation)
+    //     //     {
+    //     //         navigator.geolocation.getCurrentPosition(locationSuccess,locationError,{
+    //     //             enableHighAccuracy:true,
+    //     //             timeout:5000,
+    //     //             maximuAge:3000
+    //     //         });
+    //     //     }
+    //     //     else
+    //     //     {
+    //     //         alert("Your browser does not support Geolocation!");
+    //     //     }
+    //     // }
+
+    //     // function locationError(error)
+    //     // {
+    //     //     switch (error.code)
+    //     //     {
+    //     //         case error.TIMEOUT:
+    //     //             showError("A timeout occured! Please try again!");
+    //     //             break;
+    //     //         case error.POSITION_UNAVAILABLE:
+    //     //             showError("We can\'t detect your location. Sorry!");
+    //     //             break;
+    //     //         case error.PERMISSION_DENIED:
+    //     //             showError("Please allow geolocation access for this to work.");
+    //     //             break;
+    //     //         case error.UNKNOWN_ERROR:
+    //     //             showError("An unknown error occured!");
+    //     //             break;
+    //     //     }
+    //     // }
+
+    //     // function locationSuccess(position)
+    //     // {
+    //     //     var coords = position.coords;
+    //     //     var locpoint = new BMap.Point(coords.longitude,coords.latitude);
+    //     //     var locmarker = new BMap.Marker(locpoint);
+    //     //     map.addOverlay(locmarker);
+    //     // }
+
+
+    //     // button.onclick = function(e)
+    //     // {
+    //     //     setInterval("mmk",30000);
+    //     // }
+
+    //     map.getContainer().appendChild(button);
+    //     return button;
+    // }
+    function locateControl()
+    {
+        this.defaultAnchor = BMAP_ANCHOR_BOTTOM_RIGHT;
+        this.defaultOffset = new BMap.Size(21,188);
+    }
+    //继承Control的全部属性
+    locateControl.prototype = new BMap.Control();
+    //自定义类的initialize方法
+    locateControl.prototype.initialize = function(map)
+    {
+        var button = document.createElement("button");
+
+        button.appendChild(document.createTextNode("·"));
+ 
+        button.style.width = "4px";
+        button.style.height = "15px";
+        button.setAttribute("id","locateButton");
+
+        //function locate current position & marker it
+        var mmk = function mmkf()
+        {
+            if (navigator.geolocation)
+            {
+                navigator.geolocation.getCurrentPosition(locationSuccess,locationError,{
+                    enableHighAccuracy:true,
+                    timeout:5000,
+                    maximuAge:3000
+                });
+            }
+            else
+            {
+                alert("Your browser does not support Geolocation!");
+            }
+        }
+
+        //deal with location error
+        function locationError(error)
+        {
+            switch (error.code)
+            {
+                case error.TIMEOUT:
+                    showError("A timeout occured! Please try again!");
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    showError("We can\'t detect your location. Sorry!");
+                    break;
+                case error.PERMISSION_DENIED:
+                    showError("Please allow geolocation access for this to work.");
+                    break;
+                case error.UNKNOWN_ERROR:
+                    showError("An unknown error occured!");
+                    break;
+            }
+        }
+
+        //make marker
+        function locationSuccess(position)
+        {
+            var coords = position.coords;
+            var locpoint = new BMap.Point(coords.longitude,coords.latitude);
+            // BMap.Convertor.translate(locPoint,0,translateCallback)
+            var convertor = new BMap.Convertor();
+            convertor.translate(locPoint,0,translateCallback,1000);
+        }
+
+        var translateCallback = function(point)
+        {
+            var marker = new BMap.Marker(point);
+            map.addOverlay(marker);
+            map.setCenter(point);
+        }
+
+        //set time counter
+        button.onclick = function(e)
+        {
+            //setInterval("mmk",30000);
+            mmk();
+        }
+
+
+        map.getContainer().appendChild(button);
+        return button;
+    }
+
+    var myLocateTool = new locateControl();
+    map.addControl(myLocateTool);
+
+
+
     //自定义工具类
     function toolsControl()
     {
@@ -257,8 +415,8 @@
                 // var polyline = new BMap.Polyline([new BMap.Point(points[0].lng,points[0].lat),new BMap.Point(points[1].lng,points[1].lat)],styleOptions);
                 var removePol = function(e,ee,pol)
                 {
-                    //map.removeOverlay(pol);
-                    map.clearOverlays();
+                    map.removeOverlay(pol);
+                    // map.clearOverlays();
                     points = [];
                 }
 
